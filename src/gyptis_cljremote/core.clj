@@ -19,9 +19,15 @@
 ;;;;;;;;;;;;; based on vega
 ; => highly customizable, well documented, feature-rich, built for web.
 (-> letter-frequency
-    #_(gyptis/dodged-bar {:x :language :y :frequency :fill :letter})
-    (gyptis/stacked-bar {:x :language :y :frequency :fill :letter})
-    (assoc-in [:marks 0 :properties :hover] {:fill {:value "red"}})
+    (concat gyptis-cljremote.letters/don-quixote-freq)
+    (gyptis/line {:x :letter :y :frequency :stroke :language})
+    #_(assoc-in [:marks 0 :properties :update :alpha] 0.5)
+    #_(gyptis/stacked-bar {:x :language :y :frequency :fill :letter})
+    #_(assoc-in [:marks 0 :properties :hover] {:fill {:value "red"}})
+    #_(gyptis/facet-grid {:facet_y :letter})
+
+    #_(assoc :width 2000)
+    #_(assoc :height 2000)
     view/plot!)
 
 ;;;;;;;;;;;;; templates included for common plot types.
@@ -41,15 +47,15 @@
 (view/plot!
   (-> letter-frequency
       (gyptis/stacked-bar {:x :letter, :y :frequency})
-      (assoc-in [:width] 400)
-      (assoc-in [:height] 400)
-      (assoc-in [:scales 0 :padding] 0.15)
-      (assoc-in [:padding :right] 50)
-      (assoc-in [:axes 1 :title] "letter frequency")
-      (assoc-in [:axes 0 :title] "language")
-      (assoc-in [:scales 2 :range] ["red"
-                                    "black"])
-      (gyptis/facet-grid {:facet_y :language})
+      #_(assoc-in [:width] 400)
+      #_(assoc-in [:height] 400)
+      #_(assoc-in [:scales 0 :padding] 0.15)
+      #_(assoc-in [:padding :right] 50)
+      #_(assoc-in [:axes 1 :title] "letter frequency")
+      #_(assoc-in [:axes 0 :title] "language")
+      #_(assoc-in [:scales 2 :range] ["red"
+      #_                              "black"])
+      #_(gyptis/facet-grid {:facet_y :language})
       ))
 ;; Answer a question / tell a data story
 ;; Guess language of document

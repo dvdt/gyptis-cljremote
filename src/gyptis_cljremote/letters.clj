@@ -1,4 +1,5 @@
- (ns gyptis-cljremote.letters)
+ (ns gyptis-cljremote.letters
+   (:require [clj-http.client]))
 
 (def letter-frequency
   [{:letter "A"	:frequency 0.08167 :language "english"}
@@ -105,7 +106,75 @@
    {:letter "X" :frequency	0.00215 :language "spanish"}
    {:letter "Y" :frequency	0.01008 :language "spanish"}
    {:letter "Z" :frequency	0.00467 :language "spanish"}])
+(def don-quixote-es
+  (slurp "resources/don-quixote.txt"))
 
+ (-> don-quixote-es clojure.string/upper-case set)
+
+ (def char-set #{\À
+                 \A
+                 \¡
+                 \Á
+                 \B
+                 \C
+                 \D
+                 \E
+                 \F
+                 \G
+                 \H
+                 \I
+                 \É
+                 \J
+                 \K
+                 \L
+                 \M
+                 \Í
+                 \N
+                 \O
+                 \Ï
+                 \P
+                 \Q
+                 \Ñ
+                 \R
+                 \S
+                 \Ó
+                 \T
+                 \U
+                 \V
+                 \W
+                 \X
+                 \Y
+                 \Ù
+                 \Z
+                 \Ú
+                 \Ü})
+(defn count-letters
+  ([s]
+   (count-letters s (map char (range 65 91))))
+  ([char-set s]
+   (reduce (fn [acc c]
+             (if (get acc c)
+               (update acc c inc)
+               acc))
+           (into {} (map (fn [c] [c 0]) char-set))
+           (clojure.string/upper-case s))))
+
+ (defn ->frequency
+   [letter-count]
+   (let [total-chars (reduce + (map second letter-count))]
+     (into {} (map (fn [[letter count]] [letter (/ count (double total-chars))]) letter-count))))
+
+(def don-quixote-freq
+  (let [freq-map
+        (->> don-quixote-es
+             (count-letters char-set)
+             (->frequency))
+        freq-map (select-keys freq-map (map char (range 65 91)))
+        ]
+    (map (fn [[letter p]]
+           {:letter (str letter) :frequency p :language "Mystery 1"})
+         freq-map))
+  )
 #_(def s3-size
   (cloudwatch/get-metric-statistics :metric-name "BucketSizeBytes"
                                     :namespace "AWS/S3"
