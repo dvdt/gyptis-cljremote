@@ -1,5 +1,6 @@
  (ns gyptis-cljremote.letters
-   (:require [clj-http.client]))
+   (:require [clojure.java.jdbc :as sql]
+             [clj-http.client]))
 
 (def letter-frequency
   [{:letter "A"	:frequency 0.08167 :language "english"}
@@ -111,43 +112,17 @@
 
  (-> don-quixote-es clojure.string/upper-case set)
 
- (def char-set #{\À
-                 \A
-                 \¡
-                 \Á
-                 \B
-                 \C
-                 \D
-                 \E
-                 \F
-                 \G
-                 \H
-                 \I
-                 \É
-                 \J
-                 \K
-                 \L
-                 \M
-                 \Í
-                 \N
-                 \O
-                 \Ï
-                 \P
-                 \Q
-                 \Ñ
-                 \R
-                 \S
-                 \Ó
-                 \T
-                 \U
-                 \V
-                 \W
-                 \X
-                 \Y
-                 \Ù
-                 \Z
-                 \Ú
-                 \Ü})
+(def char-set #{\À \A \¡ \Á \B \C \D \E \F \G \H \I \É \J \K \L \M \Í \N \O \Ï \P \Q \Ñ
+                \R \S \Ó \T \U \V \W \X \Y \Ù \Z \Ú \Ü})
+(def db
+   {
+    :classname   "org.h2.Driver"
+    :subprotocol "h2:mem"
+    :subname     "demo;DB_CLOSE_DELAY=-1"
+   }
+  )
+
+
 (defn count-letters
   ([s]
    (count-letters s (map char (range 65 91))))
@@ -175,6 +150,23 @@
            {:letter (str letter) :frequency p :language "Mystery 1"})
          freq-map))
   )
+
+(def stuf
+  (let [letters-ddl (sql/create-table-ddl :letters
+                                          [:letter "CHAR(1)"]
+                                          [:frequency "DOUBLE"]
+                                          [:language "CHAR(16)"])
+
+        ]
+    (try
+      (sql/db-do-commands db "DROP TABLE letters;")
+      (catch org.h2.jdbc.JdbcBatchUpdateException e))
+    (sql/db-do-commands db letters-ddl)
+    (apply sql/insert! db :letters letter-frequency)
+    (apply sql/insert! db :letters don-quixote-freq)
+
+    ))
+
 #_(def s3-size
   (cloudwatch/get-metric-statistics :metric-name "BucketSizeBytes"
                                     :namespace "AWS/S3"
